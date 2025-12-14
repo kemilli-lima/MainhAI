@@ -1,0 +1,102 @@
+[
+  {
+    "descricao": "Redes de Computadores I: Fundamentos de redes, modelos de referência e protocolos.",
+    "indice_do_documento": 1,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Redes de Computadores: Conceitos, topologias e segurança em redes.",
+    "indice_do_documento": 2,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Introdução a Redes de Computadores: História, hardware e arquiteturas de redes.",
+    "indice_do_documento": 3,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Redes Locais de Computadores: Instalação e configuração de redes locais.",
+    "indice_do_documento": 4,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Fundamentos de Redes de Computadores: Arquitetura, transmissão de dados e protocolos.",
+    "indice_do_documento": 5,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Para Entender a Internet: Comunicação em rede e cultura digital.",
+    "indice_do_documento": 6,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Curso: Informática Avançada – Vários Autores: Tecnologia e desenvolvimento tecnológico.",
+    "indice_do_documento": 7,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Elementos da Teoria de Aprendizagem de Máquina Supervisionada: Fundamentos e classificadores.",
+    "indice_do_documento": 8,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Introdução à Informática: Conceitos básicos de sistemas operacionais e arquivos.",
+    "indice_do_documento": 9,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Informática Básica: Segurança em redes e prevenção contra vírus.",
+    "indice_do_documento": 10,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Os Números Binários: do Saber Escolar ao Saber Científico: Circuitos digitais e lógica binária.",
+    "indice_do_documento": 11,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Entendendo o Pensamento Computacional: Abstração, automação e análise em resolução de problemas.",
+    "indice_do_documento": 12,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Processamento de Dados em Larga Escala na Computação Distribuída: Algoritmos e sistemas paralelos.",
+    "indice_do_documento": 13,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Curso: Inglês para Informática – Fabiane Araújo: Vocabulário técnico e leitura em inglês.",
+    "indice_do_documento": 14,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Apostila de Administração de Redes Linux: Gerenciamento e configuração de redes Linux.",
+    "indice_do_documento": 15,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Apostila de Computação Quântica: Fundamentos e aplicações da computação quântica.",
+    "indice_do_documento": 16,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Apostila de Computação Gráfica: Técnicas e algoritmos para gráficos computacionais.",
+    "indice_do_documento": 17,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Armazenando dados com Redis: Introdução ao Redis e suas aplicações.",
+    "indice_do_documento": 18,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "Shell Script Profissional: Automação de tarefas com shell script.",
+    "indice_do_documento": 19,
+    "indice_chunk_do_documento": 1
+  },
+  {
+    "descricao": "C# e Orientação a Objetos: Conceitos de programação orientada a objetos em C#.",
+    "indice_do_documento": 20,
+    "indice_chunk_do_documento": 1
+  }
+]

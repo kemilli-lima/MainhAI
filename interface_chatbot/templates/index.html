@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>mInhA</title>
+    <link rel="icon" type="image/png" href="{{ url_for('static', filename='images/logo.png') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/index.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        let idChatLocal = null;
+        let arquivosSelecionados = [];
+        
+
+        document.addEventListener("DOMContentLoaded", function () {
+            const textarea = document.getElementById('user_input');
+            function atualizarPlaceholder() {
+                textarea.placeholder = "Pergunte alguma coisa";    
+            }
+
+            atualizarPlaceholder();
+            window.addEventListener('resize', atualizarPlaceholder);
+        });
+
+        $(document).ready(function () {
+            $('#chat_form').on('keydown', function (event) {
+                if (event.keyCode == 13) {
+                    event.preventDefault();
+                    var userMessage = $('#user_input').val();
+                    $('#user_input').val('');
+                    if (userMessage.trim() !== '') {
+                        addUserMessage(userMessage);
+                        sendMessage(userMessage);
+                    }
+                }
+            });
+        });
+
+        $(document).ready(function () {
+            $('#chat_form').on('submit', function (event) {
+                event.preventDefault();
+                var userMessage = $('#user_input').val();
+                $('#user_input').val('');
+                if (userMessage.trim() !== '') {
+                    addUserMessage(userMessage);
+                    sendMessage(userMessage);
+                }
+            });
+        });
+
+        function addUserMessage(message) {
+            let arquivosHTML = '';
+            if (arquivosSelecionados.length > 0) {
+                arquivosHTML = '<p class="mensagem_anexos">Arquivos anexados junto a mensagem:</p><div class="arquivos-enviados" style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 6px;">';
+                    arquivosSelecionados.forEach(file => {
+                    arquivosHTML += `<span class="arquivo-caixinha" style="background-color: #e0f0ff; color: #003366; padding: 4px 8px; border-radius: 12px; font-size: 12px; white-space: nowrap;">${file.name}</span>`;
+                });
+                arquivosHTML += '</div>';
+            }
+        
+            const userMessageBlock = `
+                <div class="user">
+                    <div class="user__name">
+                        <p>Você:</p>
+                    </div>
+                    <p class="user__response">${message}</p>
+                    ${arquivosHTML}
+                </div>`;
+        
+            $('.chat__container').append(userMessageBlock);
+            scrollToBottom();
+        }
+
+        function autoGrow(element) {
+            element.style.height = "1px";
+            const scrollHeight = element.scrollHeight;
+            const maxHeight = 230;
+        
+            element.style.height = Math.min(scrollHeight, maxHeight) + "px";
+        }
+
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return decodeURIComponent(parts.pop().split(';').shift());
+            return null;
+        }
+
+        async function deleteCookie(name) {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`;
+            return;
+        }
+        
+
+        function formatCamelCase(str) {
+            const exceptions = ['de', 'da', 'do', 'das', 'dos', 'e'];
+            return str.toLowerCase().split(' ').map((word, index) => {
+                if (exceptions.includes(word) && index !== 0) {
+                    return word;
+                }
+                return word.charAt(0).toUpperCase() + word.slice(1);
+            }).join(' ');
+        }
+
+        
+        function addBotMessage() {
+            var botMessageBlock = `
+                <div class="bot skeleton">
+                    <div class="bot__container">
+                        <img src="{{ url_for('static', filename='images/ursinhominha.png') }}" alt="" class="bot__img">
+                        <div class="bot__response">
+                            <div class="bot__name">
+                                <p>Assistente:</p>
+                            </div>
+                            <p class="bot__name__response">Os agentes podem levar até alguns minutos para pesquisar, analisar e responder. Exibiremos os resultados assim que os agentes tiverem processado os dados...  <img src="{{ url_for('static', filename='images/brilhos.gif') }}" alt="✨" style="width: 20px; height: 20px; vertical-align: middle; margin-left: 4px;"></p>
+                            <div class="bot_options">
+                                <button class="audio-button" style="display: none;">
+                                    <img src="{{ url_for('static', filename='images/audio.png') }}" />
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>`;
+            $('.chat__container').append(botMessageBlock);
+            scrollToBottom();
+        }
+
+        function openMenu(id) {
+            const menu = document.getElementById(id);
+            const icon = menu.querySelector("i");
+            const history = document.querySelector(".history");
+
+            if (menu.classList.contains("open")) {
+                menu.classList.remove("open");
+                icon.classList.remove("fa-times");
+                icon.classList.add("fa-ellipsis-h");
+            } else {
+                menu.classList.add("open");
+                icon.classList.remove("fa-ellipsis-h");
+                icon.classList.add("fa-times");
+            }
+        }
+
+
+        function reseta_arquivos(id) { // falta ver esse trecho para deletar dados do chat atual (se não gerou id) ou deletar o chat pelo id.
+            arquivosSelecionados = [];
+            document.querySelector('.chat_aux_container_right').innerHTML = '';
+            document.getElementById('user_input').value = '';
+        }
+
+
+        function apagar_chat(id) {
+            function apagar_chat_pelo_id(id) {
+                document.querySelector('.chat__container').innerHTML = '';
+                const historyItem = document.getElementById(id);
+                if ((historyItem && historyItem.classList.contains("history_item")) || id == '') {
+                    try {
+                        historyItem.remove();
+                    } catch {}
+                    if (id == idChatLocal || id == '') {
+                        idChatLocal = null;
+                    }
+                }
+
+                reseta_arquivos(id);
+            }
+
+            if (id == '') {
+                apagar_chat_pelo_id('');
+                reseta_arquivos('');
+            } else {
+                $.ajax({
+                    type: 'POST',
+                    url: '/delete_chat',
+                    timeout: 400000,
+                    success: function (response) {
+                        apagar_chat_pelo_id(id);
+                    }
+                });
+            }
+        }
+        
+        async function get_resumo(texto) {
+            try {
+                const response = await fetch('/resumir', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ texto: texto })
+                });
+
+                if (!response.ok) {
+                    throw new Error('Erro na requisição: ' + response.status);
+                }
+
+                const data = await response.json();
+                return data.resumo;
+            } catch (erro) {
+                console.error('Erro ao obter resumo:', erro);
+                return null;
+            }
+        }
+
+        function enable_input() {
+            const textarea = document.getElementById('user_input');
+            textarea.disabled = false;
+            document.querySelector('.button_add_file').disabled = false;
+        }
+
+        function disable_input() {
+            const textarea = document.getElementById('user_input');
+            textarea.disabled = true;
+            document.querySelector('.button_add_file').disabled = true;
+        }
+
+        let synth = window.speechSynthesis;
+        let isSpeaking = false;
+
+        function speak(msg) {
+            if (isSpeaking) {
+                synth.cancel();
+                isSpeaking = false;
+            } else {
+                const utterance = new SpeechSynthesisUtterance(msg);
+                utterance.lang = 'pt-BR';
+                utterance.pitch = 1;
+                utterance.rate = 1;
+                
+                const voices = synth.getVoices();
+                utterance.voice = voices.find(voice => voice.lang === 'pt-BR') || voices[0];
+
+                synth.speak(utterance);
+                isSpeaking = true;
+            }
+        }
+
+    
+        function sendMessage(message) {
+            addBotMessage();
+            disable_input();
+            const $lastBotResponse = $('.bot__name__response').last();
+            const pergunta_feita = document.getElementsByClassName("query");
+            if (pergunta_feita.length > 0) {
+                pergunta_feita[0].value = "";
+                pergunta_feita[0].style.height = "30px";
+            }
+
+            const arquivosParaEnviar = [...arquivosSelecionados];
+            reseta_arquivos('');
+
+            const formData = new FormData();
+            formData.append('input_data', message);
+
+            arquivosParaEnviar.forEach((file, i) => {
+                formData.append('archives[]', file);
+            });
+
+            $.ajax({
+                type: 'POST',
+                url: '/chat',
+                timeout: 120000,
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (response) {
+                    const markdownResponse = response.response;
+                    const htmlResponse = marked.parse(markdownResponse);
+                    $('.bot').last().find('.audio-button').show();
+                    $lastBotResponse.html(htmlResponse);
+                    $lastBotResponse.closest('.bot').removeClass('skeleton');
+                    const cleanedResponse = (markdownResponse.trim()).replace(/['"]/g, '');
+                    $('.audio-button').last().attr("onClick", `speak('${cleanedResponse}')`);
+        
+                    if (!idChatLocal) {
+                        const newDiv = document.createElement("div");
+                        const id = `item_${Date.now()}`;
+                        newDiv.className = "history_item";
+                        newDiv.id = id;
+        
+                        get_resumo(message).then((resumo) => {
+                            newDiv.innerHTML = `
+                            <p style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${resumo}</p>
+                            <div class="fab-wrapper">
+                                <div class="fab" onclick="toggleMenu('${id}')"><i class='fas fa-ellipsis-h'></i></div>
+                                <div class="fab-menu" id="${id}_menu">
+                                    <i class='fas fa-trash' onclick="apagar_chat('${id}')"></i>
+                                </div>
+                            </div>
+                            `;
+                            idChatLocal = id;
+                            document.getElementsByClassName("history")[0].appendChild(newDiv);
+                        });
+                    }
+        
+                    scrollToBottom();
+                    enable_input();
+                },
+                error: function (jqXHR, textStatus, errorThrown) {
+                    if (textStatus === 'timeout') {
+                        $('.bot__name__response').last().text('Desculpe, o tempo de espera foi excedido.');
+                    } else {
+                        $('.bot__name__response').last().text('Desculpe, algo deu errado.');
+                    }
+                    $lastBotResponse.closest('.bot').removeClass('skeleton');
+                    enable_input();
+                }
+            });
+        }
+        
+        
+        function toggleMenu(id) {
+            console.log('entrei no toggleMenu');
+            const menu = document.getElementById(`${id}_menu`);
+            document.querySelectorAll('.fab-menu').forEach(m => {
+                if (m !== menu) m.style.display = 'none';
+            });
+        
+            if (menu) {
+                menu.style.display = (menu.style.display === 'flex') ? 'none' : 'flex';
+            }
+        }
+        
+
+        function scrollToBottom() {
+            $('.chat').animate({ scrollTop: $('.chat')[0].scrollHeight }, 200);
+        }
+    
+
+        function openAsideBarMobile() {
+            const aside = document.querySelector(".aside-chat");
+            const buttonIcon = document.querySelector(".aside__mobile__button i");
+
+            if (aside.classList.contains("open")) {
+                aside.classList.remove("open");
+                buttonIcon.classList.remove("fa-times");
+                buttonIcon.classList.add("fa-bars");
+            } else {
+                aside.classList.add("open");
+                buttonIcon.classList.remove("fa-bars");
+                buttonIcon.classList.add("fa-times");
+            }
+        }
+
+        const form = document.getElementById('chat_form');
+        form.addEventListener('keypress', function(event) {
+            if (event.keyCode === 13 && !event.shiftKey) {
+                event.preventDefault();
+                form.submit();
+            }
+        });
+
+        form.addEventListener('submit', function(event) {
+            if (!textarea.value.trim()) {
+                event.preventDefault();
+            }
+        });
+
+
+        function abrirSeletorArquivo() {
+            const input = document.getElementById('fileInput');
+            input.click();
+        
+            input.onchange = function () {
+                const file = input.files[0];
+                if (file) {
+                    arquivosSelecionados.push(file);
+        
+                    const fileBox = document.createElement('div');
+                    fileBox.className = 'file-box';
+                    fileBox.textContent = file.name;
+        
+                    const removeBtn = document.createElement('span');
+                    removeBtn.textContent = 'x';
+                    removeBtn.className = 'remove-file';
+                    removeBtn.onclick = function () {
+                        fileBox.remove();
+                        // Remove o arquivo correspondente do array
+                        arquivosSelecionados = arquivosSelecionados.filter(f => f !== file);
+                    };
+        
+                    fileBox.appendChild(removeBtn);
+                    const container = document.querySelector('.chat_aux_container_right');
+                    container.appendChild(fileBox);
+        
+                    input.value = '';
+                }
+            };
+        }
+        
+    </script>
+</head>
+<body>
+    <header>
+        <div class="aside__mobile__button" onClick="openAsideBarMobile()">
+            <i class='fas fa-bars fa-2x'></i>
+        </div>
+        <img src="{{ url_for('static', filename='images/logo.png') }}" onClick="window.location.href=''"/>
+    </header>
+    <main>
+        <section>
+            <article class="chat">
+                <div class="chat__container">
+
+                </div>
+            </article>
+
+            <form id="chat_form" class="query__container" method="post">
+                <div class="input_container">
+                    <textarea id="user_input" class="query" autocomplete="off" oninput="autoGrow(this)" placeholder="Pergunte alguma coisa"></textarea>
+                </div>
+                <div class="chat_aux">
+                    <div class="chat_aux_container">
+                        <div class="chat_aux_container_left">
+                            <input id="fileInput" class="button_add_file" type="file" style="display: none;"/>
+                            <i onclick="abrirSeletorArquivo()" class="fa fa-file" aria-hidden="true" id="recordImage" style="cursor: pointer; color: white;"></i>
+                        </div>
+                        <div class="chat_aux_container_right">
+
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </section>
+        <aside class="aside-chat">
+            <div class="aside-title-container">
+                <div>
+                    <img src="{{ url_for('static', filename='images/logo.png') }}"/>
+                </div>
+                <p class="aside-title-content">Histórico</p>
+            </div>
+            <div class="history">
+                <div class="history_item" onclick="apagar_chat('')" style="margin-top: -40px;">
+                    <p>Novo Chat</p>
+                    <div class="fab-wrapper">
+                        <div class="fab">
+                            <i class="fa fa-plus" aria-hidden="true"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="history_menu">
+                
+            </div>
+            <div class="about">
+                <p>© Hackathon Agents4Good</p>
+                <p>UFCG</p>
+            </div>
+        </aside>
+    </main>
+</body>
+</html>
